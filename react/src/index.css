@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #09090b;
+  font-family: Inter, system-ui, sans-serif;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: white;
+  color: black;
+}
+
+input,
+textarea,
+pre {
+  caret-color: white;
+}
