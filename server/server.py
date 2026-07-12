@@ -10,11 +10,12 @@ import aiohttp
 import socket
 import ssl
 import threading
+from recon_routes import recon_bp
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
-
+app.register_blueprint(recon_bp)
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -257,6 +258,79 @@ def api_lastbyte():
 
     except Exception:
         return jsonify({"status": "ERROR", "body": traceback.format_exc()}), 500
+
+
+# =========================
+# FETCH WORDLIST / DICTIONARY FROM URL
+# =========================
+# Done server-side (rather than a direct browser fetch) so CORS on
+# third-party wordlist hosts (raw GitHub, SecLists mirrors, etc.) isn't
+# an issue. Each non-blank line becomes one payload.
+MAX_WORDLIST_BYTES = 5 * 1024 * 1024   # 5 MB cap on the downloaded file
+MAX_WORDLIST_LINES = 50_000            # cap on number of payloads returned
+
+
+@app.route("/api/fetch-wordlist", methods=["POST"])
+def api_fetch_wordlist():
+    try:
+        data = request.get_json(silent=True) or {}
+        url = (data.get("url") or "").strip()
+
+        if not url:
+            return jsonify({"error": "Missing URL"}), 400
+
+        if not url.startswith(("http://", "https://")):
+            return jsonify({"error": "URL must start with http:// or https://"}), 400
+
+        try:
+            resp = requests.get(
+                url,
+                stream=True,
+                timeout=(10, 30),
+                verify=False,
+                headers={"User-Agent": "QA-Workbench/1.0"},
+            )
+        except requests.exceptions.ConnectTimeout:
+            return jsonify({"error": "Connection timed out"}), 504
+        except requests.exceptions.ReadTimeout:
+            return jsonify({"error": "Read timed out"}), 504
+        except requests.exceptions.ConnectionError as e:
+            return jsonify({"error": f"Connection error: {str(e)}"}), 502
+
+        if resp.status_code >= 400:
+            return jsonify({"error": f"Remote server returned HTTP {resp.status_code}"}), 502
+
+        # Stream + cap bytes read so a huge or malicious file can't
+        # exhaust memory.
+        chunks = []
+        total = 0
+        truncated_bytes = False
+        for chunk in resp.iter_content(chunk_size=65536):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > MAX_WORDLIST_BYTES:
+                truncated_bytes = True
+                break
+            chunks.append(chunk)
+
+        raw = b"".join(chunks)
+        text = raw.decode("utf-8", errors="ignore")
+
+        lines = [line.strip() for line in text.splitlines()]
+        lines = [line for line in lines if line]
+
+        truncated = truncated_bytes or len(lines) > MAX_WORDLIST_LINES
+        lines = lines[:MAX_WORDLIST_LINES]
+
+        return jsonify({
+            "lines": lines,
+            "count": len(lines),
+            "truncated": truncated,
+        })
+
+    except Exception:
+        return jsonify({"error": traceback.format_exc()}), 500
 
 
 # =========================
