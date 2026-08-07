@@ -1,9 +1,0 @@
-[build]
-  base = "react"
-  command = "pnpm install --frozen-lockfile && pnpm run build"
-  publish = "react/dist"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200

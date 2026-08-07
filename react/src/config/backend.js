@@ -1,4 +1,5 @@
-// Reads the backend URL from the Vite env at build time.
-// Set VITE_API_URL in Netlify/Vercel project settings for production,
-// and optionally in a local .env file for dev (falls back to localhost:5000).
-export const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// In production, the React build is served by the same Flask app that
+// exposes /api/*, so requests can just be relative (same origin) —
+// no separate backend URL needed. For local dev (vite dev server on
+// a different port than Flask), set VITE_API_URL in a local .env file.
+export const BACKEND = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "");

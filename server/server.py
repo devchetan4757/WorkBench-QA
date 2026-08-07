@@ -15,7 +15,7 @@ from recon_routes import recon_bp
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="")
 app.register_blueprint(recon_bp)
 
 ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
@@ -31,9 +31,23 @@ CORS(app, resources={
 })
 
 
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status": "OK", "body": "Flask backend running"})
+
+
 @app.route("/")
 def home():
-    return jsonify({"status": "OK", "body": "Flask backend running"})
+    return app.send_static_file("index.html")
+
+
+# Serve the built React app for any non-API route (SPA fallback)
+@app.route("/<path:path>")
+def serve_react(path):
+    full_path = os.path.join(app.static_folder, path)
+    if path and os.path.exists(full_path):
+        return app.send_static_file(path)
+    return app.send_static_file("index.html")
 
 
 def get_input(key, default=""):
