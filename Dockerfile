@@ -1,7 +1,7 @@
 # --- Stage 1: build the React frontend ---
 FROM node:20-slim AS frontend-build
 WORKDIR /app/react
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 COPY react/package.json react/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY react/ ./
