@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,20 +7,144 @@ html, body, #root {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: #09090b;
-  font-family: Inter, system-ui, sans-serif;
+  background: #0a0a0a;
+  font-family: 'VT323', ui-monospace, monospace;
 }
 * {
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
 ::selection {
-  background: white;
-  color: black;
+  background: #ff2d40;
+  color: #0a0a0a;
 }
 
 input,
 textarea,
 pre {
-  caret-color: white;
+  caret-color: #ff2d40;
 }
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #ff2d40;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@keyframes blink {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: 0.82; }
+  98% { opacity: 1; }
+  99% { opacity: 0.88; }
+}
+
+/* ── Pixel-grid overlay — the atmospheric flourish, replaces CRT scanlines ── */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 4px);
+  opacity: 0.5;
+}
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: inset 0 0 160px rgba(0,0,0,0.8);
+}
+
+/* ── Keycap buttons — hard offset shadow, presses flat on click ── */
+.keycap:active:not(:disabled) {
+  transform: translate(3px, 3px) !important;
+  box-shadow: none !important;
+}
+
+/* ── Pixel corner-bracket HUD frame — chunky stair-step blocks, ─────────
+   the signature "8-bit dialog box" motif on key panels. Built from
+   box-shadow "pixels" instead of a border so the corners read as blocky,
+   not as thin lines. ─────────────────────────────────────────────────── */
+.bracket-frame {
+  position: relative;
+}
+.bracket-frame::before,
+.bracket-frame::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  background: var(--bf-color, #ff2d40);
+  box-shadow:
+    6px 0 0 var(--bf-color, #ff2d40),
+    0 6px 0 var(--bf-color, #ff2d40);
+}
+.bracket-frame::before {
+  top: -3px; left: -3px;
+}
+.bracket-frame::after {
+  bottom: -3px; right: -3px;
+  box-shadow:
+    -6px 0 0 var(--bf-color, #ff2d40),
+    0 -6px 0 var(--bf-color, #ff2d40);
+}
+
+/* ── Responsive tri-pane layout ──────────────────────────────── */
+/* Mobile: one pane visible at a time, switched by the tab bar.   */
+/* Tablet+: classic three-column console layout, all visible.     */
+.console-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.console-grid > .pane {
+  display: none;
+}
+.console-grid > .pane.is-active {
+  display: block;
+}
+@media (min-width: 880px) {
+  .console-grid {
+    display: grid;
+    grid-template-columns: 320px 260px 1fr;
+    align-items: start;
+    gap: 16px;
+  }
+  .console-grid > .pane {
+    display: block !important;
+  }
+}
+
+/* Mobile-only tab bar for switching panes; hidden once grid is 3-col */
+.mobile-pane-tabs { display: flex; }
+@media (min-width: 880px) {
+  .mobile-pane-tabs { display: none; }
+}
+
+/* ── Overflow ("⋮") menu — collapsed extra options, pixel dropdown ──── */
+.overflow-menu-panel {
+  animation: overflowIn 0.08s steps(3, end);
+}
+@keyframes overflowIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #333333; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
