@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: api-request-qa-workbench-backend
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    plan: free
+    envVars:
+      - key: ALLOWED_ORIGIN
+        value: https://your-frontend.netlify.app

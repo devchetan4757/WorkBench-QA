@@ -1,4 +1,4 @@
-export const BACKEND = "http://localhost:5000";
+export { BACKEND } from "../../config/backend.js";
 
 // ── Online wordlists ─────────────────────────────────────────
 export const WORDLISTS = {

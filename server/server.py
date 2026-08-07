@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
@@ -16,9 +17,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 app.register_blueprint(recon_bp)
+
+ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+
 CORS(app, resources={
     r"/*": {
-        "origins": "*",
+        "origins": ALLOWED_ORIGIN,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
         "expose_headers": ["Content-Type"],
@@ -337,4 +341,4 @@ def api_fetch_wordlist():
 # START
 # =========================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True, threaded=True)
